@@ -438,6 +438,162 @@ canvas {
   text-align: center;
 }
 
+.calendar-actions {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--space-2);
+  align-items: center;
+  min-width: min(100%, 300px);
+}
+
+.small-button {
+  min-height: 34px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-1);
+  background: var(--color-surface-panel);
+  color: var(--color-text-primary);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-strong);
+}
+
+.small-button:hover {
+  border-color: var(--color-accent);
+}
+
+.calendar-title {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-strong);
+  text-align: center;
+}
+
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: var(--space-2) 0 var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.calendar-legend span {
+  display: inline-flex;
+  gap: var(--space-1);
+  align-items: center;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+}
+
+.dot.done { background: var(--color-accent); border-color: var(--color-accent); }
+.dot.short { background: #202020; border-color: #202020; }
+.dot.rest { background: #b6b6b6; border-color: #b6b6b6; }
+.dot.none { background: #ffffff; }
+
+.training-calendar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.calendar-weekday {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-strong);
+  text-align: center;
+}
+
+.calendar-day {
+  min-height: 68px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-1);
+  background: var(--color-surface-panel);
+  color: var(--color-text-primary);
+  padding: var(--space-2);
+  text-align: left;
+  transition: border var(--motion-fast), transform var(--motion-fast);
+}
+
+.calendar-day:hover {
+  border-color: var(--color-accent);
+}
+
+.calendar-day:active {
+  transform: translateY(1px);
+}
+
+.calendar-day.outside {
+  opacity: .35;
+}
+
+.calendar-day.today {
+  border-width: 2px;
+  border-color: var(--color-accent);
+}
+
+.calendar-day .date {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-1);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-strong);
+}
+
+.calendar-day .status {
+  display: inline-flex;
+  margin-top: var(--space-2);
+  padding: 1px var(--space-2);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: var(--font-weight-strong);
+}
+
+.calendar-day.done .status {
+  background: var(--color-accent);
+  color: var(--color-text-secondary);
+}
+
+.calendar-day.short .status {
+  background: #202020;
+  color: var(--color-text-secondary);
+}
+
+.calendar-day.rest .status {
+  background: #b6b6b6;
+  color: var(--color-text-primary);
+}
+
+.calendar-day.none .status {
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+}
+
+.calendar-day .memo-mark {
+  color: var(--color-accent);
+  font-weight: var(--font-weight-strong);
+}
+
+.calendar-detail {
+  margin-top: var(--space-4);
+}
+
+.calendar-detail-card {
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2);
+  background: #fbfbfb;
+}
+
+.calendar-detail-card p:last-child {
+  margin-bottom: 0;
+}
+
 @media (max-width: 680px) {
   .topbar {
     grid-template-columns: 1fr;
@@ -455,5 +611,27 @@ canvas {
 
   .exercise-title {
     display: grid;
+  }
+
+  .section-head {
+    display: grid;
+  }
+
+  .calendar-actions {
+    width: 100%;
+  }
+
+  .training-calendar {
+    gap: var(--space-1);
+  }
+
+  .calendar-day {
+    min-height: 58px;
+    padding: var(--space-1);
+  }
+
+  .calendar-day .status {
+    font-size: 10px;
+    padding-inline: 5px;
   }
 }

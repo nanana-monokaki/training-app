@@ -100,6 +100,25 @@
 
       <section class="panel">
         <div class="section-head">
+          <h2>トレーニングカレンダー</h2>
+          <div class="calendar-actions">
+            <button id="prevMonth" type="button" class="small-button">前月</button>
+            <span id="calendarTitle" class="calendar-title"></span>
+            <button id="nextMonth" type="button" class="small-button">翌月</button>
+          </div>
+        </div>
+        <div class="calendar-legend" aria-label="状態の凡例">
+          <span><i class="dot done"></i>実施</span>
+          <span><i class="dot short"></i>短縮</span>
+          <span><i class="dot rest"></i>休養</span>
+          <span><i class="dot none"></i>未入力</span>
+        </div>
+        <div id="trainingCalendar" class="training-calendar" aria-label="トレーニング実施カレンダー"></div>
+        <div id="calendarDetail" class="calendar-detail"></div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
           <h2>メモ履歴</h2>
           <span class="hint" id="historyCount">0件</span>
         </div>

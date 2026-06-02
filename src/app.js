@@ -171,6 +171,8 @@ const plans = {
   }
 };
 
+let calendarCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+
 function rest(day, title, detail) {
   return { day, title, type: "休養", duration: "0-20分", detail, zwift: "なし", strength: null, links: [] };
 }
@@ -428,6 +430,89 @@ function renderHistory() {
   `).join("");
 }
 
+function renderCalendar() {
+  const calendar = document.querySelector("#trainingCalendar");
+  const title = document.querySelector("#calendarTitle");
+  const detail = document.querySelector("#calendarDetail");
+  if (!calendar || !title || !detail) return;
+
+  const history = loadHistory();
+  const byDate = new Map(history.map((item) => [item.date, item]));
+  const year = calendarCursor.getFullYear();
+  const month = calendarCursor.getMonth();
+  title.textContent = `${year}年${month + 1}月`;
+
+  const first = new Date(year, month, 1);
+  const start = new Date(year, month, 1 - first.getDay());
+  const today = todayIso();
+  const labels = ["日", "月", "火", "水", "木", "金", "土"];
+  const cells = labels.map((label) => `<div class="calendar-weekday">${label}</div>`);
+
+  for (let i = 0; i < 42; i += 1) {
+    const date = new Date(start);
+    date.setDate(start.getDate() + i);
+    const iso = toIsoDate(date);
+    const item = byDate.get(iso);
+    const status = normalizeStatus(item?.status);
+    const outside = date.getMonth() !== month ? " outside" : "";
+    const isToday = iso === today ? " today" : "";
+    const hasMemo = item?.memo ? `<span class="memo-mark">メモ</span>` : "";
+    cells.push(`
+      <button class="calendar-day ${status.className}${outside}${isToday}" type="button" data-date="${iso}">
+        <span class="date"><span>${date.getDate()}</span>${hasMemo}</span>
+        <span class="status">${status.label}</span>
+      </button>
+    `);
+  }
+
+  calendar.innerHTML = cells.join("");
+  calendar.querySelectorAll(".calendar-day").forEach((button) => {
+    button.addEventListener("click", () => showCalendarDetail(button.dataset.date));
+  });
+  showCalendarDetail(today);
+}
+
+function toIsoDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function normalizeStatus(status) {
+  if (status === "実施") return { label: "実施", className: "done" };
+  if (status === "短縮") return { label: "短縮", className: "short" };
+  if (status === "休養") return { label: "休養", className: "rest" };
+  return { label: "未入力", className: "none" };
+}
+
+function showCalendarDetail(date) {
+  const detail = document.querySelector("#calendarDetail");
+  if (!detail) return;
+  const item = loadHistory().find((entry) => entry.date === date);
+  if (!item) {
+    detail.innerHTML = `
+      <article class="calendar-detail-card">
+        <h3>${date}</h3>
+        <p class="hint">この日の記録はありません。</p>
+      </article>
+    `;
+    return;
+  }
+  detail.innerHTML = `
+    <article class="calendar-detail-card">
+      <h3>${item.date}</h3>
+      <div class="history-meta">
+        <span>体重 <b>${item.weight || "-"}kg</b></span>
+        <span>体脂肪 <b>${item.bodyFat || "-"}%</b></span>
+        <span>疲労度 <b>${item.fatigue || "-"}</b></span>
+        <span>状態 <b>${item.status || "未入力"}</b></span>
+      </div>
+      ${item.memo ? `<p>${escapeHtml(item.memo)}</p>` : `<p class="hint">メモなし</p>`}
+    </article>
+  `;
+}
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -451,6 +536,7 @@ document.querySelector("#saveLog").addEventListener("click", () => {
   upsertTodayLog(data);
   document.querySelector("#saveStatus").textContent = "保存しました。";
   renderHistory();
+  renderCalendar();
 });
 
 document.querySelector("#clearLog").addEventListener("click", () => {
@@ -463,6 +549,17 @@ document.querySelector("#clearLog").addEventListener("click", () => {
   document.querySelector("#status").value = "未入力";
   document.querySelector("#saveStatus").textContent = "今日の記録を削除しました。";
   renderHistory();
+  renderCalendar();
+});
+
+document.querySelector("#prevMonth").addEventListener("click", () => {
+  calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() - 1, 1);
+  renderCalendar();
+});
+
+document.querySelector("#nextMonth").addEventListener("click", () => {
+  calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() + 1, 1);
+  renderCalendar();
 });
 
 const savedGoal = localStorage.getItem("goal");
@@ -470,3 +567,4 @@ if (savedGoal && plans[savedGoal]) document.querySelector("#goalSelect").value =
 hydrateLog();
 render();
 renderHistory();
+renderCalendar();
