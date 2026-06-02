@@ -266,6 +266,23 @@ function logKey() {
   return `training-log-${new Date().toISOString().slice(0, 10)}`;
 }
 
+function historyKey() {
+  return "training-log-history";
+}
+
+function todayIso() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function loadHistory() {
+  const history = JSON.parse(localStorage.getItem(historyKey()) || "[]");
+  return Array.isArray(history) ? history : [];
+}
+
+function saveHistory(history) {
+  localStorage.setItem(historyKey(), JSON.stringify(history));
+}
+
 function hydrateLog() {
   const params = new URLSearchParams(location.search);
   if (params.get("weight")) document.querySelector("#weight").value = params.get("weight");
@@ -273,14 +290,149 @@ function hydrateLog() {
   if (params.get("bodyfat")) document.querySelector("#bodyFat").value = params.get("bodyfat");
 
   try {
+    const history = loadHistory();
+    const fromHistory = history.find((item) => item.date === todayIso()) || {};
     const saved = JSON.parse(localStorage.getItem(logKey()) || "{}");
+    const merged = { ...saved, ...fromHistory };
     ["weight", "bodyFat", "fatigue", "status", "memo"].forEach((id) => {
       const el = document.querySelector(`#${id}`);
-      if (!el.value && saved[id]) el.value = saved[id];
+      if (!el.value && merged[id]) el.value = merged[id];
     });
   } catch {
     document.querySelector("#saveStatus").textContent = "保存データを読めませんでした。";
   }
+}
+
+function numeric(value) {
+  const parsed = Number.parseFloat(String(value).replace(",", "."));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function upsertTodayLog(data) {
+  const history = loadHistory().filter((item) => item.date !== data.date);
+  history.push(data);
+  history.sort((a, b) => a.date.localeCompare(b.date));
+  saveHistory(history);
+}
+
+function drawChart(canvasId, history, field, label, color, minOverride = null, maxOverride = null) {
+  const canvas = document.querySelector(`#${canvasId}`);
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const width = canvas.width;
+  const height = canvas.height;
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, width, height);
+
+  const points = history
+    .map((item) => ({ date: item.date, value: numeric(item[field]) }))
+    .filter((item) => item.value !== null)
+    .slice(-30);
+
+  ctx.fillStyle = "#6b6b6b";
+  ctx.font = "24px sans-serif";
+
+  if (points.length === 0) {
+    ctx.fillText(`${label}の記録がありません`, 28, 58);
+    return;
+  }
+
+  const values = points.map((item) => item.value);
+  const minValue = minOverride ?? Math.min(...values);
+  const maxValue = maxOverride ?? Math.max(...values);
+  const padding = maxValue === minValue ? 1 : (maxValue - minValue) * 0.12;
+  const min = minOverride ?? minValue - padding;
+  const max = maxOverride ?? maxValue + padding;
+  const plot = { left: 54, right: width - 22, top: 24, bottom: height - 48 };
+
+  ctx.strokeStyle = "#dedede";
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 4; i += 1) {
+    const y = plot.top + ((plot.bottom - plot.top) / 3) * i;
+    ctx.beginPath();
+    ctx.moveTo(plot.left, y);
+    ctx.lineTo(plot.right, y);
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = "#6b6b6b";
+  ctx.font = "18px sans-serif";
+  ctx.fillText(max.toFixed(1), 8, plot.top + 6);
+  ctx.fillText(min.toFixed(1), 8, plot.bottom);
+
+  const xFor = (index) => points.length === 1
+    ? (plot.left + plot.right) / 2
+    : plot.left + ((plot.right - plot.left) / (points.length - 1)) * index;
+  const yFor = (value) => plot.bottom - ((value - min) / (max - min || 1)) * (plot.bottom - plot.top);
+
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  points.forEach((point, index) => {
+    const x = xFor(index);
+    const y = yFor(point.value);
+    if (index === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  points.forEach((point, index) => {
+    const x = xFor(index);
+    const y = yFor(point.value);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.fillStyle = "#202020";
+  ctx.font = "20px sans-serif";
+  ctx.fillText(points[0].date.slice(5), plot.left, height - 18);
+  ctx.textAlign = "right";
+  ctx.fillText(points[points.length - 1].date.slice(5), plot.right, height - 18);
+  ctx.textAlign = "left";
+}
+
+function renderHistory() {
+  const history = loadHistory();
+  const recent = history.slice(-30);
+  drawChart("weightChart", recent, "weight", "体重", "#ff0000");
+  drawChart("bodyFatChart", recent, "bodyFat", "体脂肪率", "#202020");
+  drawChart("fatigueChart", recent, "fatigue", "疲労度", "#b90000", 1, 5);
+
+  const list = document.querySelector("#historyList");
+  const count = document.querySelector("#historyCount");
+  if (count) count.textContent = `${history.length}件`;
+  if (!list) return;
+
+  const rows = history.slice().reverse();
+  if (rows.length === 0) {
+    list.innerHTML = `<div class="empty-state">まだ記録がありません。</div>`;
+    return;
+  }
+
+  list.innerHTML = rows.map((item) => `
+    <article class="history-item">
+      <div class="history-meta">
+        <b>${item.date}</b>
+        <span>体重 ${item.weight || "-"}kg</span>
+        <span>体脂肪 ${item.bodyFat || "-"}%</span>
+        <span>疲労度 ${item.fatigue || "-"}</span>
+        <span>${item.status || "未入力"}</span>
+      </div>
+      ${item.memo ? `<p>${escapeHtml(item.memo)}</p>` : `<p class="hint">メモなし</p>`}
+    </article>
+  `).join("");
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 document.querySelector("#goalSelect").addEventListener("change", (event) => {
@@ -289,25 +441,30 @@ document.querySelector("#goalSelect").addEventListener("change", (event) => {
 });
 
 document.querySelector("#saveLog").addEventListener("click", () => {
-  const data = {};
+  const data = { date: todayIso(), updatedAt: new Date().toISOString() };
   ["weight", "bodyFat", "fatigue", "status", "memo"].forEach((id) => {
     data[id] = document.querySelector(`#${id}`).value;
   });
   localStorage.setItem(logKey(), JSON.stringify(data));
+  upsertTodayLog(data);
   document.querySelector("#saveStatus").textContent = "保存しました。";
+  renderHistory();
 });
 
 document.querySelector("#clearLog").addEventListener("click", () => {
   localStorage.removeItem(logKey());
+  saveHistory(loadHistory().filter((item) => item.date !== todayIso()));
   ["weight", "bodyFat", "memo"].forEach((id) => {
     document.querySelector(`#${id}`).value = "";
   });
   document.querySelector("#fatigue").value = "3";
   document.querySelector("#status").value = "未入力";
   document.querySelector("#saveStatus").textContent = "今日の記録を削除しました。";
+  renderHistory();
 });
 
 const savedGoal = localStorage.getItem("goal");
 if (savedGoal && plans[savedGoal]) document.querySelector("#goalSelect").value = savedGoal;
 hydrateLog();
 render();
+renderHistory();

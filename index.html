@@ -71,6 +71,35 @@
         </div>
         <p id="saveStatus" class="hint"></p>
       </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <h2>記録グラフ</h2>
+          <span class="hint">過去30件</span>
+        </div>
+        <div class="chart-grid">
+          <div>
+            <h3>体重</h3>
+            <canvas id="weightChart" width="640" height="260" aria-label="体重の推移グラフ"></canvas>
+          </div>
+          <div>
+            <h3>体脂肪率</h3>
+            <canvas id="bodyFatChart" width="640" height="260" aria-label="体脂肪率の推移グラフ"></canvas>
+          </div>
+          <div>
+            <h3>疲労度</h3>
+            <canvas id="fatigueChart" width="640" height="260" aria-label="疲労度の推移グラフ"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <h2>メモ履歴</h2>
+          <span class="hint" id="historyCount">0件</span>
+        </div>
+        <div id="historyList" class="history-list"></div>
+      </section>
     </main>
   </div>
 
