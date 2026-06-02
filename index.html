@@ -63,41 +63,11 @@
 
       <section class="panel">
         <h2>記録</h2>
-        <div class="control-grid">
-          <div class="range-control">
-            <div class="control-head">
-              <span>体重</span>
-              <output id="weightValue">57.0kg</output>
-            </div>
-            <input id="weight" type="range" min="45" max="75" step="0.1" value="57.0">
-          </div>
-          <div class="range-control">
-            <div class="control-head">
-              <span>体脂肪率</span>
-              <output id="bodyFatValue">21.0%</output>
-            </div>
-            <input id="bodyFat" type="range" min="8" max="30" step="0.1" value="21.0">
-          </div>
-          <div class="range-control">
-            <div class="control-head">
-              <span>疲労度</span>
-              <output id="fatigueValue">3</output>
-            </div>
-            <input id="fatigue" type="range" min="1" max="5" step="1" value="3">
-          </div>
-          <div class="status-control">
-            <div class="control-head">
-              <span>状態</span>
-              <output id="statusValue">未入力</output>
-            </div>
-            <div class="segmented" role="group" aria-label="状態">
-              <button type="button" data-status="未入力" class="active">未入力</button>
-              <button type="button" data-status="実施">実施</button>
-              <button type="button" data-status="短縮">短縮</button>
-              <button type="button" data-status="休養">休養</button>
-            </div>
-            <input id="status" type="hidden" value="未入力">
-          </div>
+        <div class="form-grid">
+          <label>体重 kg<select id="weight"></select></label>
+          <label>体脂肪率 %<select id="bodyFat"></select></label>
+          <label>疲労度<select id="fatigue"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
+          <label>状態<select id="status"><option>未入力</option><option>実施</option><option>短縮</option><option>休養</option></select></label>
         </div>
         <label>メモ<textarea id="memo" placeholder="脚、お尻、睡眠、補給など"></textarea></label>
         <div class="actions">

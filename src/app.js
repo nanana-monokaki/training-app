@@ -303,7 +303,6 @@ function hydrateLog() {
       const el = document.querySelector(`#${id}`);
       if (merged[id]) el.value = merged[id];
     });
-    syncLogControls();
   } catch {
     document.querySelector("#saveStatus").textContent = "保存データを読めませんでした。";
   }
@@ -529,30 +528,18 @@ document.querySelector("#goalSelect").addEventListener("change", (event) => {
   render();
 });
 
-function syncLogControls() {
-  const weight = document.querySelector("#weight");
-  const bodyFat = document.querySelector("#bodyFat");
-  const fatigue = document.querySelector("#fatigue");
-  const status = document.querySelector("#status");
-  document.querySelector("#weightValue").textContent = `${Number(weight.value).toFixed(1)}kg`;
-  document.querySelector("#bodyFatValue").textContent = `${Number(bodyFat.value).toFixed(1)}%`;
-  document.querySelector("#fatigueValue").textContent = fatigue.value;
-  document.querySelector("#statusValue").textContent = status.value;
-  document.querySelectorAll("[data-status]").forEach((button) => {
-    button.classList.toggle("active", button.dataset.status === status.value);
-  });
+function populatePicker(selectId, min, max, step, defaultValue) {
+  const select = document.querySelector(`#${selectId}`);
+  const options = [];
+  for (let value = min; value <= max + 0.0001; value += step) {
+    const text = value.toFixed(1);
+    options.push(`<option value="${text}" ${text === defaultValue ? "selected" : ""}>${text}</option>`);
+  }
+  select.innerHTML = options.join("");
 }
 
-["weight", "bodyFat", "fatigue"].forEach((id) => {
-  document.querySelector(`#${id}`).addEventListener("input", syncLogControls);
-});
-
-document.querySelectorAll("[data-status]").forEach((button) => {
-  button.addEventListener("click", () => {
-    document.querySelector("#status").value = button.dataset.status;
-    syncLogControls();
-  });
-});
+populatePicker("weight", 45, 75, 0.1, "57.0");
+populatePicker("bodyFat", 8, 30, 0.1, "21.0");
 
 document.querySelector("#saveLog").addEventListener("click", () => {
   const data = { date: todayIso(), updatedAt: new Date().toISOString() };
@@ -577,7 +564,6 @@ document.querySelector("#clearLog").addEventListener("click", () => {
   document.querySelector("#fatigue").value = "3";
   document.querySelector("#status").value = "未入力";
   document.querySelector("#saveStatus").textContent = "今日の記録を削除しました。";
-  syncLogControls();
   renderHistory();
   renderCalendar();
 });
@@ -595,7 +581,6 @@ document.querySelector("#nextMonth").addEventListener("click", () => {
 const savedGoal = localStorage.getItem("goal");
 if (savedGoal && plans[savedGoal]) document.querySelector("#goalSelect").value = savedGoal;
 hydrateLog();
-syncLogControls();
 render();
 renderHistory();
 renderCalendar();

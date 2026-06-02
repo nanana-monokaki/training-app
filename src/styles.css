@@ -315,63 +315,6 @@ iframe {
   gap: var(--space-3);
 }
 
-.control-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-4);
-}
-
-.range-control,
-.status-control {
-  display: grid;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-2);
-  background: #fbfbfb;
-}
-
-.control-head {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--space-3);
-  align-items: baseline;
-  font-weight: var(--font-weight-strong);
-}
-
-.control-head output {
-  color: var(--color-accent-dark);
-  font-size: var(--font-size-xl);
-}
-
-input[type="range"] {
-  min-height: 36px;
-  padding: 0;
-  accent-color: var(--color-accent);
-}
-
-.segmented {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--space-2);
-}
-
-.segmented button {
-  min-height: 42px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-1);
-  background: var(--color-surface-panel);
-  color: var(--color-text-primary);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-strong);
-}
-
-.segmented button.active {
-  border-color: var(--color-accent);
-  background: var(--color-accent);
-  color: var(--color-text-secondary);
-}
-
 label {
   display: grid;
   gap: var(--space-1);
@@ -381,6 +324,11 @@ label {
 
 input, textarea {
   width: 100%;
+}
+
+label select {
+  width: 100%;
+  min-height: 46px;
 }
 
 textarea {
@@ -656,7 +604,7 @@ canvas {
     grid-template-columns: 1fr;
   }
 
-  .metrics, .form-grid, .control-grid, .zwift-links {
+  .metrics, .form-grid, .zwift-links {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -692,11 +640,7 @@ canvas {
     padding-inline: 5px;
   }
 
-  .control-grid {
+  .form-grid {
     grid-template-columns: 1fr;
-  }
-
-  .segmented {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
