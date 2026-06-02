@@ -216,6 +216,7 @@ function strengthHtml(groupKey, embed) {
 
 function dayHtml(day, index, open = false) {
   const tagClass = day.type === "休養" ? "tag rest" : "tag";
+  const durationLabel = day.type === "ライド" ? `Zwift ${day.duration}` : day.duration;
   const links = day.links.length ? `
     <div class="zwift-links">
       ${day.links.map((item) => `<a href="${item.url}" target="_blank" rel="noreferrer">${item.label}</a>`).join("")}
@@ -225,10 +226,11 @@ function dayHtml(day, index, open = false) {
     <article class="accordion ${open ? "open" : ""}">
       <button class="acc-trigger" type="button" aria-expanded="${open}">
         <span><span class="${tagClass}">${day.day}</span>${day.title}</span>
-        <span>${day.duration}</span>
+        <span>${durationLabel}</span>
       </button>
       <div class="acc-body">
         <div class="workout">
+          <p><b>Zwift目安時間:</b> ${day.duration}</p>
           <p><b>内容:</b> ${day.detail}</p>
           <p><b>Zwift:</b> ${day.zwift}</p>
           ${links}
