@@ -289,19 +289,21 @@ function saveHistory(history) {
 
 function hydrateLog() {
   const params = new URLSearchParams(location.search);
-  if (params.get("weight")) document.querySelector("#weight").value = params.get("weight");
-  if (params.get("bodyFat")) document.querySelector("#bodyFat").value = params.get("bodyFat");
-  if (params.get("bodyfat")) document.querySelector("#bodyFat").value = params.get("bodyfat");
+  const paramValues = {};
+  if (params.get("weight")) paramValues.weight = params.get("weight");
+  if (params.get("bodyFat")) paramValues.bodyFat = params.get("bodyFat");
+  if (params.get("bodyfat")) paramValues.bodyFat = params.get("bodyfat");
 
   try {
     const history = loadHistory();
     const fromHistory = history.find((item) => item.date === todayIso()) || {};
     const saved = JSON.parse(localStorage.getItem(logKey()) || "{}");
-    const merged = { ...saved, ...fromHistory };
+    const merged = { ...saved, ...fromHistory, ...paramValues };
     ["weight", "bodyFat", "fatigue", "status", "memo"].forEach((id) => {
       const el = document.querySelector(`#${id}`);
-      if (!el.value && merged[id]) el.value = merged[id];
+      if (merged[id]) el.value = merged[id];
     });
+    syncLogControls();
   } catch {
     document.querySelector("#saveStatus").textContent = "保存データを読めませんでした。";
   }
@@ -527,6 +529,31 @@ document.querySelector("#goalSelect").addEventListener("change", (event) => {
   render();
 });
 
+function syncLogControls() {
+  const weight = document.querySelector("#weight");
+  const bodyFat = document.querySelector("#bodyFat");
+  const fatigue = document.querySelector("#fatigue");
+  const status = document.querySelector("#status");
+  document.querySelector("#weightValue").textContent = `${Number(weight.value).toFixed(1)}kg`;
+  document.querySelector("#bodyFatValue").textContent = `${Number(bodyFat.value).toFixed(1)}%`;
+  document.querySelector("#fatigueValue").textContent = fatigue.value;
+  document.querySelector("#statusValue").textContent = status.value;
+  document.querySelectorAll("[data-status]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.status === status.value);
+  });
+}
+
+["weight", "bodyFat", "fatigue"].forEach((id) => {
+  document.querySelector(`#${id}`).addEventListener("input", syncLogControls);
+});
+
+document.querySelectorAll("[data-status]").forEach((button) => {
+  button.addEventListener("click", () => {
+    document.querySelector("#status").value = button.dataset.status;
+    syncLogControls();
+  });
+});
+
 document.querySelector("#saveLog").addEventListener("click", () => {
   const data = { date: todayIso(), updatedAt: new Date().toISOString() };
   ["weight", "bodyFat", "fatigue", "status", "memo"].forEach((id) => {
@@ -543,11 +570,14 @@ document.querySelector("#clearLog").addEventListener("click", () => {
   localStorage.removeItem(logKey());
   saveHistory(loadHistory().filter((item) => item.date !== todayIso()));
   ["weight", "bodyFat", "memo"].forEach((id) => {
-    document.querySelector(`#${id}`).value = "";
+    if (id === "memo") document.querySelector(`#${id}`).value = "";
   });
+  document.querySelector("#weight").value = "57.0";
+  document.querySelector("#bodyFat").value = "21.0";
   document.querySelector("#fatigue").value = "3";
   document.querySelector("#status").value = "未入力";
   document.querySelector("#saveStatus").textContent = "今日の記録を削除しました。";
+  syncLogControls();
   renderHistory();
   renderCalendar();
 });
@@ -565,6 +595,7 @@ document.querySelector("#nextMonth").addEventListener("click", () => {
 const savedGoal = localStorage.getItem("goal");
 if (savedGoal && plans[savedGoal]) document.querySelector("#goalSelect").value = savedGoal;
 hydrateLog();
+syncLogControls();
 render();
 renderHistory();
 renderCalendar();
