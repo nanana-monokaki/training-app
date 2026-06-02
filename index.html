@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f5f3ee">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Training">
+  <title>ロードバイク トレーニング</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./src/styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <h1>ロードバイク トレーニング</h1>
+        <p id="todayText">FTP154W / 東北180km / 自宅筋トレ</p>
+      </div>
+      <select id="goalSelect" aria-label="目標を選択">
+        <option value="tohoku">東北180km</option>
+        <option value="long">短期ロング</option>
+        <option value="base">通常期</option>
+      </select>
+    </header>
+
+    <main>
+      <section class="panel hero">
+        <div class="hero-head">
+          <div>
+            <h2 id="goalTitle">ツールド東北180km</h2>
+            <p id="goalNote"></p>
+          </div>
+          <span class="badge" id="daysLeft">--日</span>
+        </div>
+        <div class="metrics">
+          <div><span>Recovery</span><b>-85W</b></div>
+          <div><span>Z2</span><b>95-115W</b></div>
+          <div><span>SST</span><b>135-146W</b></div>
+          <div><span>VO2max</span><b>170-185W</b></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <h2>今日</h2>
+          <button class="icon-btn" id="openToday" type="button" aria-label="今日のメニューを開く">開く</button>
+        </div>
+        <div id="todayCard"></div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <h2>週間メニュー</h2>
+          <span class="hint">曜日をタップで開閉</span>
+        </div>
+        <div id="weekList"></div>
+      </section>
+
+      <section class="panel">
+        <h2>記録</h2>
+        <p class="notice">オムロンコネクトはAppleヘルスケアへ共有できますが、WebアプリからHealthKitを直接読むことはできません。ここでは手入力、URLパラメータ、CSV貼り付けを想定します。</p>
+        <div class="form-grid">
+          <label>体重 kg<input id="weight" inputmode="decimal" placeholder="57.2"></label>
+          <label>体脂肪率 %<input id="bodyFat" inputmode="decimal" placeholder="21.0"></label>
+          <label>疲労度<select id="fatigue"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
+          <label>状態<select id="status"><option>未入力</option><option>実施</option><option>短縮</option><option>休養</option></select></label>
+        </div>
+        <label>メモ<textarea id="memo" placeholder="脚、お尻、睡眠、補給など"></textarea></label>
+        <div class="actions">
+          <button id="saveLog" type="button">保存</button>
+          <button id="clearLog" type="button" class="secondary">今日を消す</button>
+        </div>
+        <p id="saveStatus" class="hint"></p>
+      </section>
+
+      <section class="panel">
+        <h2>オムロン連携メモ</h2>
+        <ul class="plain">
+          <li>オムロン体重計 → OMRON connect → Appleヘルスケア共有、という流れが現実的です。</li>
+          <li>静的WebアプリはAppleヘルスケアを直接読めません。</li>
+          <li>安定した自動取得が必要になったら、HealthKit対応のiOSアプリ化が必要です。</li>
+          <li>暫定連携として `?weight=57.2&bodyFat=21.0` のURLパラメータ取り込みに対応します。</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+
+  <script src="./src/app.js" type="module"></script>
+</body>
+</html>
