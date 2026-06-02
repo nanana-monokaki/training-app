@@ -528,19 +528,6 @@ document.querySelector("#goalSelect").addEventListener("change", (event) => {
   render();
 });
 
-function populatePicker(selectId, min, max, step, defaultValue) {
-  const select = document.querySelector(`#${selectId}`);
-  const options = [];
-  for (let value = min; value <= max + 0.0001; value += step) {
-    const text = value.toFixed(1);
-    options.push(`<option value="${text}" ${text === defaultValue ? "selected" : ""}>${text}</option>`);
-  }
-  select.innerHTML = options.join("");
-}
-
-populatePicker("weight", 45, 75, 0.1, "57.0");
-populatePicker("bodyFat", 8, 30, 0.1, "21.0");
-
 document.querySelector("#saveLog").addEventListener("click", () => {
   const data = { date: todayIso(), updatedAt: new Date().toISOString() };
   ["weight", "bodyFat", "fatigue", "status", "memo"].forEach((id) => {
@@ -559,8 +546,8 @@ document.querySelector("#clearLog").addEventListener("click", () => {
   ["weight", "bodyFat", "memo"].forEach((id) => {
     if (id === "memo") document.querySelector(`#${id}`).value = "";
   });
-  document.querySelector("#weight").value = "57.0";
-  document.querySelector("#bodyFat").value = "21.0";
+  document.querySelector("#weight").value = "60.0";
+  document.querySelector("#bodyFat").value = "20.0";
   document.querySelector("#fatigue").value = "3";
   document.querySelector("#status").value = "未入力";
   document.querySelector("#saveStatus").textContent = "今日の記録を削除しました。";
