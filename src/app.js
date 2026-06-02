@@ -27,8 +27,8 @@ const videos = {
     title: "YTWL",
     set: "各8回 x 2セット。",
     cue: "軽く小さく正確に。肩甲骨を動かし、首に力を入れない。",
-    id: "LxP9Sqzfd4U",
-    fallback: "https://www.youtube.com/results?search_query=YTWL+%E8%82%A9%E7%94%B2%E9%AA%A8"
+    id: "6kU296TsvZA",
+    fallback: "https://www.youtube.com/watch?v=6kU296TsvZA"
   },
   goblet: {
     title: "ゴブレットスクワット",
