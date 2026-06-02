@@ -44,7 +44,6 @@
       <section class="panel">
         <div class="section-head">
           <h2>今日</h2>
-          <button class="icon-btn" id="openToday" type="button" aria-label="今日のメニューを開く">開く</button>
         </div>
         <div id="todayCard"></div>
       </section>
@@ -59,7 +58,6 @@
 
       <section class="panel">
         <h2>記録</h2>
-        <p class="notice">オムロンコネクトはAppleヘルスケアへ共有できますが、WebアプリからHealthKitを直接読むことはできません。ここでは手入力、URLパラメータ、CSV貼り付けを想定します。</p>
         <div class="form-grid">
           <label>体重 kg<input id="weight" inputmode="decimal" placeholder="57.2"></label>
           <label>体脂肪率 %<input id="bodyFat" inputmode="decimal" placeholder="21.0"></label>
@@ -72,16 +70,6 @@
           <button id="clearLog" type="button" class="secondary">今日を消す</button>
         </div>
         <p id="saveStatus" class="hint"></p>
-      </section>
-
-      <section class="panel">
-        <h2>オムロン連携メモ</h2>
-        <ul class="plain">
-          <li>オムロン体重計 → OMRON connect → Appleヘルスケア共有、という流れが現実的です。</li>
-          <li>静的WebアプリはAppleヘルスケアを直接読めません。</li>
-          <li>安定した自動取得が必要になったら、HealthKit対応のiOSアプリ化が必要です。</li>
-          <li>暫定連携として `?weight=57.2&bodyFat=21.0` のURLパラメータ取り込みに対応します。</li>
-        </ul>
       </section>
     </main>
   </div>
