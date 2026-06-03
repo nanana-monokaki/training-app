@@ -76,8 +76,8 @@ const videos = {
     title: "デッドバグ",
     set: "左右10回 x 2セット。",
     cue: "腰を床から浮かせない。手足を伸ばすほど難しくなる。",
-    id: "K8E3RWbvhwM",
-    fallback: "https://www.youtube.com/results?search_query=%E3%83%87%E3%83%83%E3%83%89%E3%83%90%E3%82%B0+%E3%83%95%E3%82%A9%E3%83%BC%E3%83%A0"
+    id: "o4GKiEoYClI",
+    fallback: "https://www.youtube.com/watch?v=o4GKiEoYClI"
   },
   glute: {
     title: "グルートブリッジ",
