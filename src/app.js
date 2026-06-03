@@ -83,8 +83,8 @@ const videos = {
     title: "グルートブリッジ",
     set: "12-15回 x 2セット。",
     cue: "腰ではなくお尻で持ち上げる。上で1秒止める。",
-    id: "NUg_Xyn2okw",
-    fallback: "https://www.youtube.com/results?search_query=%E3%82%B0%E3%83%AB%E3%83%BC%E3%83%88%E3%83%96%E3%83%AA%E3%83%83%E3%82%B8+%E3%83%95%E3%82%A9%E3%83%BC%E3%83%A0"
+    id: "tqp5XQPpTxY",
+    fallback: "https://www.youtube.com/watch?v=tqp5XQPpTxY"
   }
 };
 
