@@ -171,7 +171,12 @@ const plans = {
   }
 };
 
-let calendarCursor = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+const TRAINING_DAY_ROLLOVER_HOUR = 4;
+const LOG_SYNC_CHANNEL = "training-log-sync";
+let activeTrainingDate = todayIso();
+let calendarCursor = monthCursorFor(activeTrainingDate);
+let trainingDayTimerId = null;
+const syncChannel = "BroadcastChannel" in window ? new BroadcastChannel(LOG_SYNC_CHANNEL) : null;
 
 function rest(day, title, detail) {
   return { day, title, type: "休養", duration: "0-20分", detail, zwift: "なし", strength: null, links: [] };
@@ -185,8 +190,19 @@ function zwift(label, url) {
   return { label, url };
 }
 
+function trainingDate(date = new Date()) {
+  const shifted = new Date(date);
+  shifted.setHours(shifted.getHours() - TRAINING_DAY_ROLLOVER_HOUR);
+  return shifted;
+}
+
+function monthCursorFor(isoDate) {
+  const [year, month] = isoDate.split("-").map(Number);
+  return new Date(year, month - 1, 1);
+}
+
 function todayIndex() {
-  const day = new Date().getDay();
+  const day = trainingDate().getDay();
   return day === 0 ? 6 : day - 1;
 }
 
@@ -267,7 +283,7 @@ function bindAccordions() {
 }
 
 function logKey() {
-  return `training-log-${new Date().toISOString().slice(0, 10)}`;
+  return `training-log-${todayIso()}`;
 }
 
 function historyKey() {
@@ -275,7 +291,7 @@ function historyKey() {
 }
 
 function todayIso() {
-  return new Date().toISOString().slice(0, 10);
+  return toIsoDate(trainingDate());
 }
 
 function loadHistory() {
@@ -285,6 +301,24 @@ function loadHistory() {
 
 function saveHistory(history) {
   localStorage.setItem(historyKey(), JSON.stringify(history));
+}
+
+function defaultLogValues() {
+  return {
+    weight: "60.0",
+    bodyFat: "20.0",
+    fatigue: "3",
+    status: "未入力",
+    memo: ""
+  };
+}
+
+function setLogForm(values = {}) {
+  const merged = { ...defaultLogValues(), ...values };
+  ["weight", "bodyFat", "fatigue", "status", "memo"].forEach((id) => {
+    const el = document.querySelector(`#${id}`);
+    if (el) el.value = merged[id] ?? "";
+  });
 }
 
 function hydrateLog() {
@@ -298,11 +332,7 @@ function hydrateLog() {
     const history = loadHistory();
     const fromHistory = history.find((item) => item.date === todayIso()) || {};
     const saved = JSON.parse(localStorage.getItem(logKey()) || "{}");
-    const merged = { ...saved, ...fromHistory, ...paramValues };
-    ["weight", "bodyFat", "fatigue", "status", "memo"].forEach((id) => {
-      const el = document.querySelector(`#${id}`);
-      if (merged[id]) el.value = merged[id];
-    });
+    setLogForm({ ...saved, ...fromHistory, ...paramValues });
   } catch {
     document.querySelector("#saveStatus").textContent = "保存データを読めませんでした。";
   }
@@ -523,33 +553,78 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function notifyLogChanged() {
+  syncChannel?.postMessage({ type: "log-updated", date: todayIso(), sentAt: Date.now() });
+}
+
+function refreshFromStorage({ resetMonthOnDateChange = false } = {}) {
+  const currentTrainingDate = todayIso();
+  if (currentTrainingDate !== activeTrainingDate) {
+    activeTrainingDate = currentTrainingDate;
+    if (resetMonthOnDateChange) calendarCursor = monthCursorFor(currentTrainingDate);
+  }
+  hydrateLog();
+  render();
+  renderHistory();
+  renderCalendar();
+}
+
+function nextTrainingDayRollover() {
+  const next = new Date();
+  next.setHours(TRAINING_DAY_ROLLOVER_HOUR, 0, 1, 0);
+  if (next <= new Date()) next.setDate(next.getDate() + 1);
+  return next;
+}
+
+function scheduleTrainingDayRollover() {
+  if (trainingDayTimerId) window.clearTimeout(trainingDayTimerId);
+  const delay = nextTrainingDayRollover() - new Date();
+  trainingDayTimerId = window.setTimeout(() => {
+    refreshFromStorage({ resetMonthOnDateChange: true });
+    scheduleTrainingDayRollover();
+  }, delay);
+}
+
+function currentLogData() {
+  const data = { date: todayIso(), updatedAt: new Date().toISOString() };
+  ["weight", "bodyFat", "fatigue", "status", "memo"].forEach((id) => {
+    data[id] = document.querySelector(`#${id}`).value;
+  });
+  return data;
+}
+
+function saveCurrentLog({ silent = false } = {}) {
+  const data = currentLogData();
+  localStorage.setItem(logKey(), JSON.stringify(data));
+  upsertTodayLog(data);
+  notifyLogChanged();
+  if (!silent) document.querySelector("#saveStatus").textContent = "保存しました。";
+  renderHistory();
+  renderCalendar();
+}
+
+function debounce(callback, wait) {
+  let timerId = null;
+  return (...args) => {
+    if (timerId) window.clearTimeout(timerId);
+    timerId = window.setTimeout(() => callback(...args), wait);
+  };
+}
+
 document.querySelector("#goalSelect").addEventListener("change", (event) => {
   localStorage.setItem("goal", event.target.value);
   render();
 });
 
 document.querySelector("#saveLog").addEventListener("click", () => {
-  const data = { date: todayIso(), updatedAt: new Date().toISOString() };
-  ["weight", "bodyFat", "fatigue", "status", "memo"].forEach((id) => {
-    data[id] = document.querySelector(`#${id}`).value;
-  });
-  localStorage.setItem(logKey(), JSON.stringify(data));
-  upsertTodayLog(data);
-  document.querySelector("#saveStatus").textContent = "保存しました。";
-  renderHistory();
-  renderCalendar();
+  saveCurrentLog();
 });
 
 document.querySelector("#clearLog").addEventListener("click", () => {
   localStorage.removeItem(logKey());
   saveHistory(loadHistory().filter((item) => item.date !== todayIso()));
-  ["weight", "bodyFat", "memo"].forEach((id) => {
-    if (id === "memo") document.querySelector(`#${id}`).value = "";
-  });
-  document.querySelector("#weight").value = "60.0";
-  document.querySelector("#bodyFat").value = "20.0";
-  document.querySelector("#fatigue").value = "3";
-  document.querySelector("#status").value = "未入力";
+  setLogForm();
+  notifyLogChanged();
   document.querySelector("#saveStatus").textContent = "今日の記録を削除しました。";
   renderHistory();
   renderCalendar();
@@ -567,7 +642,31 @@ document.querySelector("#nextMonth").addEventListener("click", () => {
 
 const savedGoal = localStorage.getItem("goal");
 if (savedGoal && plans[savedGoal]) document.querySelector("#goalSelect").value = savedGoal;
-hydrateLog();
-render();
-renderHistory();
-renderCalendar();
+
+window.addEventListener("storage", (event) => {
+  if (event.key === historyKey() || event.key === logKey() || event.key === "goal") {
+    if (event.key === "goal" && event.newValue && plans[event.newValue]) {
+      document.querySelector("#goalSelect").value = event.newValue;
+    }
+    refreshFromStorage();
+  }
+});
+
+syncChannel?.addEventListener("message", (event) => {
+  if (event.data?.type === "log-updated") refreshFromStorage();
+});
+
+const autosaveLog = debounce(() => saveCurrentLog({ silent: true }), 350);
+["weight", "bodyFat", "fatigue", "status"].forEach((id) => {
+  document.querySelector(`#${id}`).addEventListener("change", () => saveCurrentLog({ silent: true }));
+});
+document.querySelector("#memo").addEventListener("input", autosaveLog);
+
+window.addEventListener("pageshow", () => refreshFromStorage({ resetMonthOnDateChange: true }));
+window.addEventListener("focus", () => refreshFromStorage({ resetMonthOnDateChange: true }));
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") refreshFromStorage({ resetMonthOnDateChange: true });
+});
+
+refreshFromStorage({ resetMonthOnDateChange: true });
+scheduleTrainingDayRollover();
