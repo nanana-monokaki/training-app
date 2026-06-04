@@ -34,15 +34,15 @@ const videos = {
     title: "ゴブレットスクワット",
     set: "10-12回 x 3セット。追い込みすぎない。",
     cue: "ダンベルを胸の前で持つ。膝とつま先の向きをそろえる。",
-    id: "kDo3sQv0VHk",
-    fallback: "https://www.youtube.com/results?search_query=%E3%82%B4%E3%83%96%E3%83%AC%E3%83%83%E3%83%88%E3%82%B9%E3%82%AF%E3%83%AF%E3%83%83%E3%83%88+%E3%83%95%E3%82%A9%E3%83%BC%E3%83%A0"
+    id: "meJSJEG_sT0",
+    fallback: "https://www.youtube.com/watch?v=meJSJEG_sT0"
   },
   rdl: {
     title: "ダンベルRDL",
     set: "10-12回 x 3セット。",
     cue: "股関節を後ろへ引く。背中はまっすぐ、お尻ともも裏に効かせる。",
-    id: "eFEVKmp3M4g",
-    fallback: "https://www.youtube.com/results?search_query=%E3%83%80%E3%83%B3%E3%83%99%E3%83%AB+RDL+%E3%83%95%E3%82%A9%E3%83%BC%E3%83%A0"
+    id: "aa57T45iFSE",
+    fallback: "https://www.youtube.com/watch?v=aa57T45iFSE"
   },
   split: {
     title: "ブルガリアンスクワット",
